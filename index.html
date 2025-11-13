@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Apology Airways</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary: #ff4757; /* A soft apology red/pink */
+            --bg: #f1f2f6;
+            --card: #ffffff;
+            --text: #2f3542;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrolling on transitions */
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: white;
+            position: relative;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- UTILITIES --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100%;
+            padding: 25px;
+            background: white;
+            transition: transform 0.4s ease-in-out, opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(50px);
+            display: none; /* Hidden by default */
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateX(0);
+            display: block;
+        }
+
+        h1, h2, h3 { margin: 0 0 10px 0; }
+        p { color: #747d8c; font-size: 14px; margin-bottom: 20px; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #ccc; box-shadow: none; }
+
+        /* --- SCREEN 1: SEARCH --- */
+        .hero-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        .input-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #a4b0be;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .input-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2f3542;
+        }
+
+        /* --- SCREEN 2: FLIGHTS --- */
+        .flight-card {
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #fff0f1;
+            position: relative;
+        }
+        
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .amenities {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .badge {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid #ffccd0;
+        }
+
+        /* --- SCREEN 3: DETAILS --- */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        /* --- SCREEN 4: BOARDING PASS --- */
+        .ticket {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid #eee;
+        }
+        .ticket-header {
+            background: var(--primary);
+            padding: 20px;
+            color: white;
+            text-align: center;
+            border-bottom: 2px dashed white;
+        }
+        .ticket-body {
+            padding: 20px;
+        }
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .qr-area {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #eee;
+        }
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            background: #2f3542; /* Placeholder for QR */
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 20px;
+        }
+        .modal.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 350px;
+        }
+        .typewriter {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="screen-1" class="screen active">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 40px;">✈️</div>
+                <div class="hero-title">Sad Apology Airways</div>
+                <p>Let's fix the connection.</p>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">From</div>
+                <div class="input-value">My Silence (Ghostingville)</div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">To</div>
+                <div class="input-value">Cape Town (Your Dream) ⛰️</div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Date</div>
+                <div class="input-value" id="current-date"></div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Passenger</div>
+                <div class="input-value">Okuhle 🎀</div>
+            </div>
+
+            <button class="btn" onclick="goToScreen(2)">Find Flights</button>
+        </div>
+
+        <div id="screen-2" class="screen">
+            <h2>Flight Results</h2>
+            <p>We found 1 direct connection.</p>
+
+            <div class="flight-card">
+                <div class="flight-header">
+                    <span>KAT-001</span>
+                    <span>1h 00m</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="text-align: left;">
+                        <div style="font-size: 24px; font-weight: bold;">JHB</div>
+                        <div style="font-size: 12px; color: #777;">Silence</div>
+                    </div>
+                    <div style="color: var(--primary);">✈</div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 24px; font-weight: bold;">CPT</div>
+                        <div style="font-size: 12px; color: #777;">Home</div>
+                    </div>
+                </div>
+
+                <div class="amenities">
+                    <div class="badge">🚫 No Pilchards</div>
+                    <div class="badge">🍞 Garlic Bread</div>
+                </div>
+                <div class="amenities">
+                    <div class="badge">✨ 3... 2... 1...</div>
+                    <div class="badge">❤️ Honest Communication</div>
+                </div>
+
+                <p style="font-size: 12px; margin-top: 15px;">
+                    Warning: This flight leaves Nonchalant Mode behind. Passenger is advised to expect sincerity.
+                </p>
+
+                <button class="btn" onclick="goToScreen(3)">Select This Flight</button>
+            </div>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 12px; cursor: pointer;" onclick="goToScreen(1)">← Go Back</p>
+        </div>
+
+        <div id="screen-3" class="screen">
+            <h2>Passenger Details</h2>
+            <p>Please confirm your identity.</p>
+
+            <div class="info-row">
+                <span style="color: #aaa;">First Name</span>
+                <b>Okuhle</b>
+            </div>
+            <div class="info-row">
+                <span style="color: #aaa;">Last Name</span>
+                <b>(1 in a Million)</b>
+            </div>
+            <div class="info-row">
+                <span style="color: #aaa;">Occupation</span>
+                <b>Cabin Crew / Baker 🧁</b>
+            </div>
+            <div class="info-row">
+                <span style="color: #aaa;">Birth Year</span>
+                <b>2006</b>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="terms" onchange="toggleButton()">
+                <label for="terms" style="font-size: 12px;">
+                    I accept the terms: I acknowledge that Kat messed up, but he is really sorry and values me.
+                </label>
+            </div>
+
+            <button class="btn" id="confirm-btn" disabled onclick="goToScreen(4)">Check In</button>
+            <p style="text-align: center; margin-top: 20px; font-size: 12px; cursor: pointer;" onclick="goToScreen(2)">← Go Back</p>
+        </div>
+
+        <div id="screen-4" class="screen">
+            <h2 style="text-align: center;">You're Checked In!</h2>
+            <p style="text-align: center;">Screenshot this for your records.</p>
+
+            <div class="ticket">
+                <div class="ticket-header">
+                    <h1 style="font-size: 20px; letter-spacing: 2px;">BOARDING PASS</h1>
+                </div>
+                <div class="ticket-body">
+                    <div class="ticket-row">
+                        <div>
+                            <div class="input-label">PASSENGER</div>
+                            <div class="input-value">Okuhle 🎀</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="input-label">FLIGHT</div>
+                            <div class="input-value">KAT-001</div>
+                        </div>
+                    </div>
+                    <div class="ticket-row">
+                        <div>
+                            <div class="input-label">FROM</div>
+                            <div class="input-value">SORRY</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="input-label">TO</div>
+                            <div class="input-value">CPT</div>
+                        </div>
+                    </div>
+                    <div class="ticket-row">
+                        <div>
+                            <div class="input-label">GATE</div>
+                            <div class="input-value">06</div>
+                        </div>
+                        <div>
+                            <div class="input-label">SEAT</div>
+                            <div class="input-value">1A</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="input-label">BOARDING</div>
+                            <div class="input-value">Now</div>
+                        </div>
+                    </div>
+
+                    <div class="qr-area" onclick="showModal()">
+                        <div style="background: #333; color: white; padding: 20px; border-radius: 10px; cursor: pointer;">
+                            TAP TO SCAN <br> FOR MESSAGE
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="final-modal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary);">Hey Okuhle...</h2>
+            <div class="typewriter">
+                I know I messed up by going quiet. I hated every second of the silence.<br><br>
+                I value you, your voice notes, your baking, and even your questionable love for staying up late.<br><br>
+                I'm sorry. Can we restart the countdown?
+            </div>
+            <h1 id="countdown" style="color: var(--primary);">3... 2... 1...</h1>
+            <button class="btn" onclick="closeModal()">Accept Apology</button>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        const today = new Date();
+        document.getElementById('current-date').innerText = today.toDateString();
+
+        // Navigation Logic
+        function goToScreen(screenNum) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            // Show target screen
+            document.getElementById(`screen-${screenNum}`).classList.add('active');
+        }
+
+        // Checkbox Logic
+        function toggleButton() {
+            const checkbox = document.getElementById('terms');
+            const btn = document.getElementById('confirm-btn');
+            btn.disabled = !checkbox.checked;
+        }
+
+        // Modal Logic
+        function showModal() {
+            document.getElementById('final-modal').classList.add('visible');
+        }
+
+        function closeModal() {
+            // Optional: You can redirect to WhatsApp here
+            // window.location.href = "https://wa.me/YOUR_NUMBER";
+            alert("Sugar dreams ✨");
+            document.getElementById('final-modal').classList.remove('visible');
+        }
+    </script>
+</body>
+</html>
